@@ -91,10 +91,10 @@ define supervisor::service (
   service { "supervisor::${name}":
     ensure   => $service_ensure,
     provider => base,
-    restart  => "/usr/bin/supervisorctl restart ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep -Pzo '^stopped\nstarted$'",
-    start    => "/usr/bin/supervisorctl start ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep '^started$'",
-    status   => "/usr/bin/supervisorctl status | awk '/^${name}[: ]/{print \$2}' | grep '^RUNNING$'",
-    stop     => "/usr/bin/supervisorctl stop ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep '^stopped$'",
+    restart  => "/usr/bin/supervisorctl restart ${process_name} | awk '/^${name}[:_]/{print \$2}' | grep -Pzo '^stopped\nstarted$'",
+    start    => "/usr/bin/supervisorctl start ${process_name} | awk '/^${name}[:_]/{print \$2}' | grep '^started$'",
+    status   => "/usr/bin/supervisorctl status | awk '/^${name}[:_]/{print \$2}' | grep '^RUNNING$'",
+    stop     => "/usr/bin/supervisorctl stop ${process_name} | awk '/^${name}[:_]/{print \$2}' | grep '^stopped$'",
     require  => [Class['supervisor::update'], File["${supervisor::conf_dir}/${name}${supervisor::conf_ext}"]],
   }
 }
