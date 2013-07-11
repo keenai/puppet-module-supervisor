@@ -92,9 +92,9 @@ define supervisor::service (
     ensure   => $service_ensure,
     provider => base,
     restart  => "/usr/bin/supervisorctl restart ${process_name} | awk '/^${name}[:_]/{print \$2}' | uniq | grep -z '^stopped.started.$'",
-    start    => "/usr/bin/supervisorctl start ${process_name} | awk '/^${name}[:_]/{print \$2}' | grep '^started$'",
-    status   => "/usr/bin/supervisorctl status | awk '/^${name}[:_]/{print \$2}' | grep '^RUNNING$'",
-    stop     => "/usr/bin/supervisorctl stop ${process_name} | awk '/^${name}[:_]/{print \$2}' | grep '^stopped$'",
+    start    => "/usr/bin/supervisorctl start ${process_name} | awk '/^${name}[:_]/{print \$2}' | uniq | grep '^started$'",
+    status   => "/usr/bin/supervisorctl status | awk '/^${name}[:_]/{print \$2}' | uniq | grep '^RUNNING$'",
+    stop     => "/usr/bin/supervisorctl stop ${process_name} | awk '/^${name}[:_]/{print \$2}' | uniq | grep '^stopped$'",
     require  => [Class['supervisor::update'], File["${supervisor::conf_dir}/${name}${supervisor::conf_ext}"]],
   }
 }
