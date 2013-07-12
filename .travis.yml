@@ -1,1 +1,1 @@
-script: bundle exec rake spec
+script: bundle exec rake spec_prep; bundle exec rspec --format documentation spec/
