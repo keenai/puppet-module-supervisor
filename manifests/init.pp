@@ -33,7 +33,7 @@
 #     Only used if inet_http_server is set to true.
 #     Default: undef
 #
-#   [*inet_server_password*]
+#   [*inet_server_pass*]
 #     Password for the inet_http_server.
 #     Only used if inet_http_server is set to true and inet_server_user is set.
 #     Default: undef
@@ -77,7 +77,7 @@
 #
 #   [*supervisor_environment*]
 #     A list of key/value pairs in the form KEY=val,KEY2=val2 that will be
-#     placed in the supervisord process’ environment.
+#     placed in the supervisord process environment.
 #     Default: undef
 #
 #   [*identifier*]
@@ -121,7 +121,8 @@ class supervisor(
   $identifier               = undef,
   $recurse_config_dir       = false,
   $conf_dir                 = $supervisor::params::conf_dir,
-  $conf_ext                 = $supervisor::params::conf_ext
+  $conf_ext                 = $supervisor::params::conf_ext,
+  $include_files            = []
 ) inherits supervisor::params {
 
   include supervisor::update
