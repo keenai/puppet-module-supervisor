@@ -53,12 +53,7 @@ define supervisor::service (
       $dir_recurse = false
       $dir_force = false
       $service_ensure = 'running'
-
-      if $enable == true {
-        $config_ensure = undef
-      } else {
-        $config_ensure = absent
-      }
+      $config_ensure = 'file'
     }
     default: {
       fail("ensure must be 'present' or 'absent', not ${ensure}")
@@ -88,9 +83,11 @@ define supervisor::service (
     notify  => Class['supervisor::update'],
   }
 
-  service { "${process_name}":
-    ensure   => $service_ensure,
-    provider => supervisor,
-    require  => [Class['supervisor::update'], File["${supervisor::conf_dir}/${name}${supervisor::conf_ext}"]],
+  if $enable {
+    service { "${process_name}":
+      ensure   => $service_ensure,
+      provider => supervisor,
+      require  => [Class['supervisor::update'], File["${supervisor::conf_dir}/${name}${supervisor::conf_ext}"]],
+    }
   }
 }

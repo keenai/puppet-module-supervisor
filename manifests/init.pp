@@ -38,6 +38,10 @@
 #     Only used if inet_http_server is set to true and inet_server_user is set.
 #     Default: undef
 #
+#   [*enable_logrotate*]
+#     Enable logrotate.
+#     Default: true
+#
 #   [*logfile*]
 #     Main log file.
 #     Default: /var/log/supervisor/supervisord.log
@@ -96,7 +100,8 @@
 #   class { 'supervisor': }
 #
 # Notes:
-#   You should always invoke the supervisor::service definition instead. Check that readme.
+#   You should always invoke the supervisor::service definition instead.
+#   Check that readme.
 #
 class supervisor(
   $ensure                   = 'present',
@@ -110,6 +115,7 @@ class supervisor(
   $unix_server_file         = '/var/run/supervisor.sock',
   $unix_server_chmod        = undef,
   $unix_server_chown        = undef,
+  $enable_logrotate         = true,
   $logfile                  = '/var/log/supervisor/supervisord.log',
   $logfile_maxbytes         = '500MB',
   $logfile_backups          = 10,
@@ -191,10 +197,12 @@ class supervisor(
     notify  => Service[$supervisor::params::system_service],
   }
 
-  file { '/etc/logrotate.d/supervisor':
-    ensure  => $file_ensure,
-    source  => 'puppet:///modules/supervisor/logrotate',
-    require => Package[$supervisor::params::package],
+  if $enable_logrotate == true {
+    file { '/etc/logrotate.d/supervisor':
+      ensure  => $file_ensure,
+      source  => 'puppet:///modules/supervisor/logrotate',
+      require => Package[$supervisor::params::package],
+    }
   }
 
   service { $supervisor::params::system_service:
