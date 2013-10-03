@@ -53,12 +53,7 @@ define supervisor::service (
       $dir_recurse = false
       $dir_force = false
       $service_ensure = 'running'
-
-      if $enable == true {
-        $config_ensure = undef
-      } else {
-        $config_ensure = absent
-      }
+      $config_ensure = 'file'
     }
     default: {
       fail("ensure must be 'present' or 'absent', not ${ensure}")
@@ -88,13 +83,15 @@ define supervisor::service (
     notify  => Class['supervisor::update'],
   }
 
-  service { "supervisor::${name}":
-    ensure   => $service_ensure,
-    provider => base,
-    restart  => "/usr/bin/supervisorctl restart ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep -Pzo '^stopped\\nstarted$'",
-    start    => "/usr/bin/supervisorctl start ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep '^started$'",
-    status   => "/usr/bin/supervisorctl status | awk '/^${name}[: ]/{print \$2}' | grep '^RUNNING$'",
-    stop     => "/usr/bin/supervisorctl stop ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep '^stopped$'",
-    require  => [Class['supervisor::update'], File["${supervisor::conf_dir}/${name}${supervisor::conf_ext}"]],
+  if $enable {
+    service { "supervisor::${name}":
+      ensure   => $service_ensure,
+      provider => base,
+      restart  => "/usr/bin/supervisorctl restart ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep -Pzo '^stopped\\nstarted$'",
+      start    => "/usr/bin/supervisorctl start ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep '^started$'",
+      status   => "/usr/bin/supervisorctl status | awk '/^${name}[: ]/{print \$2}' | grep '^RUNNING$'",
+      stop     => "/usr/bin/supervisorctl stop ${process_name} | awk '/^${name}[: ]/{print \$2}' | grep '^stopped$'",
+      require  => [Class['supervisor::update'], File["${supervisor::conf_dir}/${name}${supervisor::conf_ext}"]],
+    }
   }
 }
