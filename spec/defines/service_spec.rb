@@ -42,16 +42,18 @@ describe 'supervisor::service' do
       should create_file('/etc/supervisor/sometitle.ini') \
           .with_content(Regexp.new Regexp.escape 'command=somecommand')
     end
-    it {
-      should contain_service("supervisor::#{title}").with(
-        'ensure'     => 'running',
-        'provider'   => 'base',
-        'restart'    => "/usr/bin/supervisorctl restart sometitle | awk '/^sometitle[: ]/{print \$2}' | grep -Pzo '^stopped\\nstarted$'",
-        'start'      => "/usr/bin/supervisorctl start sometitle | awk '/^sometitle[: ]/{print \$2}' | grep '^started$'",
-        'status'     => "/usr/bin/supervisorctl status | awk 'BEGIN { RS = \"\\n\" } /^sometitle_?\\d*/ { if (\$2 !~ /^(STARTING|RUNNING)/) { exit 1 } }'",
-        'stop'       => "/usr/bin/supervisorctl stop sometitle | awk '/^sometitle[: ]/{print \$2}' | grep '^stopped$'",
-      )
-    }
+
+    context "with ensure => absent" do
+      let (:params) { {
+        :command => 'somecommand',
+        :ensure => 'absent',
+      } }
+
+      it "should delete config and log dir" do
+        should contain_file('/etc/supervisor/sometitle.ini').with_ensure('absent')
+        should contain_file('/var/log/supervisor/sometitle').with_ensure('absent')
+      end
+    end
   end
 
 end

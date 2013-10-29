@@ -4,5 +4,7 @@
 .bundle/
 spec/fixtures/
 Gemfile.lock
-.rbenv*
 .rspec-local
+.rbenv*
+.idea
+atlassian-ide-plugin.xml

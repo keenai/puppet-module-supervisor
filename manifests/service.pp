@@ -13,7 +13,6 @@
 define supervisor::service (
   $command,
   $ensure                   = present,
-  $enable                   = true,
   $numprocs                 = 1,
   $numprocs_start           = 0,
   $priority                 = 999,
@@ -23,6 +22,8 @@ define supervisor::service (
   $exitcodes                = '0,2',
   $stopsignal               = 'TERM',
   $stopwait                 = 10,
+  $stopasgroup              = false,
+  $killasgroup              = false,
   $user                     = 'root',
   $group                    = 'root',
   $redirect_stderr          = false,
@@ -53,7 +54,7 @@ define supervisor::service (
       $dir_recurse = false
       $dir_force = false
       $service_ensure = 'running'
-      $config_ensure = 'file'
+      $config_ensure = file
     }
     default: {
       fail("ensure must be 'present' or 'absent', not ${ensure}")
@@ -76,18 +77,25 @@ define supervisor::service (
     require => Class['supervisor'],
   }
 
-  file { "${supervisor::conf_dir}/${name}${supervisor::conf_ext}":
+  $conf_file = "${supervisor::conf_dir}/${name}${supervisor::conf_ext}"
+
+  file { $conf_file:
     ensure  => $config_ensure,
     content => template('supervisor/service.ini.erb'),
-    require => File["/var/log/supervisor/${name}"],
-    notify  => Class['supervisor::update'],
   }
 
-  if $enable {
-    service { "${process_name}":
-      ensure   => $service_ensure,
-      provider => supervisor,
-      require  => [Class['supervisor::update'], File["${supervisor::conf_dir}/${name}${supervisor::conf_ext}"]],
-    }
+  service { "supervisor::${name}":
+    ensure   => $service_ensure,
+    provider => supervisor,
+  }
+
+  if $ensure == 'present' {
+    File["/var/log/supervisor/${name}"] -> File[$conf_file] ~>
+    Class['supervisor::update'] -> Service["supervisor::${name}"]
+  } else { # $ensure == 'absent'
+    # First stop the service, delete the .ini, reload the config, delete the log dir
+    Service["supervisor::${name}"] -> File[$conf_file] ~>
+    Class['supervisor::update'] -> File["/var/log/supervisor/${name}"]
+
   }
 }
